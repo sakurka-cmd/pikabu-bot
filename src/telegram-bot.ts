@@ -202,7 +202,11 @@ ${authors.slice(0, 5).map(a => `@${a.author} (${a.count})`).join('\n') || '—'}
 
   // Callbacks
   bot.on('callback_query', async (query) => {
-    if (!query.message?.chat.id || !query.data) return;
+    console.log('[Bot] Callback received:', query.data, 'from:', query.message?.chat.id);
+    if (!query.message?.chat.id || !query.data) {
+      console.log('[Bot] Callback ignored - missing data');
+      return;
+    }
     try {
       await handleCallback(bot, query.message.chat.id, query.data, query.message.message_id);
     } catch (e: any) {
