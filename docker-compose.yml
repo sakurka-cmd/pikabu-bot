@@ -1,0 +1,10 @@
+services:
+  pikabu-bot:
+    build: .
+    container_name: pikabu-bot
+    restart: unless-stopped
+    volumes:
+      - ./data:/app/data
+    environment:
+      - DATABASE_URL=file:/app/data/bot.db
+      - BOT_TOKEN=${BOT_TOKEN}
