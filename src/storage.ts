@@ -138,8 +138,15 @@ export async function createUser(
 ): Promise<UserData> {
   const adminExists = await prisma.user.findFirst({ where: { isAdmin: true } });
 
-  const user = await prisma.user.create({
-    data: {
+  const user = await prisma.user.upsert({
+    where: { chatId: BigInt(chatId) },
+    update: {
+      username: userInfo?.username,
+      firstName: userInfo?.firstName,
+      lastName: userInfo?.lastName,
+      lastActivityAt: new Date(),
+    },
+    create: {
       chatId: BigInt(chatId),
       username: userInfo?.username,
       firstName: userInfo?.firstName,

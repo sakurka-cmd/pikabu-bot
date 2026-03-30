@@ -203,7 +203,16 @@ ${authors.slice(0, 5).map(a => `@${a.author} (${a.count})`).join('\n') || '—'}
   // Callbacks
   bot.on('callback_query', async (query) => {
     if (!query.message?.chat.id || !query.data) return;
-    await handleCallback(bot, query.message.chat.id, query.data, query.message.message_id);
+    try {
+      await handleCallback(bot, query.message.chat.id, query.data, query.message.message_id);
+    } catch (e: any) {
+      console.error('[Bot] Callback error:', e.message);
+      // Try to send new message if edit failed
+      try {
+        const user = await getUser(query.message.chat.id);
+        if (user) await showMainMenu(bot, query.message.chat.id, user);
+      } catch {}
+    }
     await bot.answerCallbackQuery(query.id);
   });
 
