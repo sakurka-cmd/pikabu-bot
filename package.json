@@ -1,0 +1,23 @@
+{
+  "name": "pikabu-pic-collector",
+  "version": "2.0.0",
+  "description": "Telegram bot for collecting Pikabu posts by tags and authors",
+  "main": "src/main.ts",
+  "scripts": {
+    "start": "bun run src/main.ts",
+    "dev": "bun --watch run src/main.ts",
+    "db:generate": "prisma generate",
+    "db:push": "prisma db push"
+  },
+  "dependencies": {
+    "cheerio": "^1.2.0",
+    "node-telegram-bot-api": "^0.67.0",
+    "@prisma/client": "5"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "@types/node-telegram-bot-api": "^0.64.0",
+    "prisma": "5",
+    "typescript": "^5"
+  }
+}

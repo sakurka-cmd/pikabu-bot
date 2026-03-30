@@ -1,0 +1,153 @@
+// Pikabu Pic Collector 2.0 - Prisma Schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Users
+model User {
+  id             Int       @id @default(autoincrement())
+  chatId         BigInt    @unique
+  username       String?
+  firstName      String?
+  lastName       String?
+  isActive       Boolean   @default(true)
+  isAdmin        Boolean   @default(false)
+  isBlocked      Boolean   @default(false)
+  joinedAt       DateTime  @default(now())
+  lastActivityAt DateTime  @updatedAt
+  postsReceived  Int       @default(0)
+
+  tagSets        TagSet[]
+  authorSubs     AuthorSubscription[]
+  receivedPosts  UserPost[]
+
+  @@index([chatId])
+  @@index([isAdmin])
+  @@index([isBlocked])
+}
+
+// Tag Sets
+model TagSet {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  name        String
+  isActive    Boolean  @default(true)
+  includeTags String   @default("[]")
+  excludeTags String   @default("[]")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, name])
+  @@index([userId])
+  @@index([isActive])
+}
+
+// Author Subscriptions
+model AuthorSubscription {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  authorUsername  String
+  authorName      String?
+  isActive        Boolean  @default(true)
+  sendPreview     Boolean  @default(true)
+  createdAt       DateTime @default(now())
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, authorUsername])
+  @@index([userId])
+  @@index([authorUsername])
+  @@index([isActive])
+}
+
+// Seen Posts
+model SeenPost {
+  id            Int      @id @default(autoincrement())
+  postId        String   @unique
+  title         String?
+  link          String?
+  author        String?
+  authorName    String?
+  rating        Float    @default(0)
+  images        String?
+  tags          String?
+  bodyPreview   String?
+  commentsCount Int      @default(0)
+  parsedAt      DateTime @default(now())
+
+  sentTo        UserPost[]
+
+  @@index([postId])
+  @@index([author])
+  @@index([parsedAt])
+}
+
+model UserPost {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  postId    Int
+  sentAt    DateTime @default(now())
+  isPreview Boolean  @default(false)
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      SeenPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@index([userId])
+  @@index([postId])
+  @@index([sentAt])
+}
+
+// Settings
+model Settings {
+  id                   Int     @id @default(1)
+  botToken             String?
+  parseIntervalMinutes Int     @default(30)
+  maxTagSetsPerUser    Int     @default(10)
+  maxTagsPerSet        Int     @default(20)
+  maxAuthorSubs        Int     @default(20)
+  isActive             Boolean @default(true)
+}
+
+// Global Stats
+model GlobalStats {
+  id               Int       @id @default(1)
+  totalUsers       Int       @default(0)
+  totalPostsSent   Int       @default(0)
+  totalPreviews    Int       @default(0)
+  totalParses      Int       @default(0)
+  parseErrors      Int       @default(0)
+  lastParseAt      DateTime?
+  lastError        String?
+  lastErrorAt      DateTime?
+  updatedAt        DateTime  @updatedAt
+}
+
+// Dialog States
+model DialogState {
+  id        Int     @id @default(autoincrement())
+  chatId    BigInt  @unique
+  state     String
+  data      String?
+  updatedAt DateTime @updatedAt
+}
+
+// Logs
+model Log {
+  id        Int      @id @default(autoincrement())
+  chatId    Int?
+  action    String
+  details   String
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([action])
+}
