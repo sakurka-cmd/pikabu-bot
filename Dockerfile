@@ -1,13 +1,13 @@
-# Pikabu Pic Collector 2.0 - Optimized Bun Runtime
-FROM public.ecr.aws/docker/library/node:20-alpine
+# Pikabu Pic Collector 2.0 - Pure Bun Runtime
+FROM oven/bun:1-alpine
 
 WORKDIR /app
 
-# Install bun and openssl (required for Prisma)
-RUN apk add --no-cache openssl && npm install -g bun
+# Install openssl (required for Prisma)
+RUN apk add --no-cache openssl
 
 # Copy package files
-COPY package.json ./
+COPY package.json bun.lock* ./
 COPY prisma ./prisma/
 
 # Install dependencies
