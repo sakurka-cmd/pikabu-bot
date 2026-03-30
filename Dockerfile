@@ -19,12 +19,13 @@ RUN bunx prisma generate
 # Copy source
 COPY src ./src
 COPY tsconfig.json ./
+COPY docker-entrypoint.sh ./
 
 # Create data directory
-RUN mkdir -p /app/data
+RUN mkdir -p /app/data && chmod +x docker-entrypoint.sh
 
 ENV NODE_ENV=production
 ENV DATABASE_URL=file:/app/data/bot.db
 
 # Run
-CMD ["bun", "run", "src/main.ts"]
+CMD ["./docker-entrypoint.sh"]
