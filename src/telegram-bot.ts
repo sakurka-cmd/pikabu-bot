@@ -195,14 +195,52 @@ ${authors.slice(0, 5).map(a => `@${a.author} (${a.count})`).join('\n') || '—'}
   bot.on('text', async (msg) => {
     console.log('[Bot] Text received:', msg.text, 'from:', msg.chat.id);
     if (msg.text?.startsWith('/')) return;
-    const dialog = await getDialogState(msg.chat.id);
+
+    const chatId = msg.chat.id;
+    const text = msg.text || '';
+
+    // Handle Reply Keyboard buttons
+    if (text.includes('📦') || text.toLowerCase().includes('набор') || text.toLowerCase().includes('tag')) {
+      await showSetsList(bot, chatId);
+      return;
+    }
+    if (text.includes('👤') || text.toLowerCase().includes('подписки') || text.toLowerCase().includes('author')) {
+      await showAuthorsList(bot, chatId);
+      return;
+    }
+    if (text.includes('📊') || text.toLowerCase().includes('статистика') || text.toLowerCase().includes('stat')) {
+      const user = await getUser(chatId);
+      if (user) await showMainMenu(bot, chatId, user);
+      return;
+    }
+    if (text.includes('❓') || text.toLowerCase().includes('помощь') || text.toLowerCase().includes('help')) {
+      await bot.sendMessage(chatId, '📖 Используйте кнопки меню', { parse_mode: 'Markdown' });
+      return;
+    }
+    if (text.includes('👑') || text.toLowerCase().includes('админ') || text.toLowerCase().includes('admin')) {
+      const user = await getUser(chatId);
+      if (user?.isAdmin) await showAdminPanel(bot, chatId);
+      return;
+    }
+    if (text.includes('🔄') || text.toLowerCase().includes('парсинг') || text.toLowerCase().includes('parse')) {
+      const user = await getUser(chatId);
+      if (user?.isAdmin) {
+        await bot.sendMessage(chatId, '🔄 Парсинг...');
+        const result = await runParsing(bot);
+        await bot.sendMessage(chatId, result.error ? `❌ ${result.error}` : `✅ Новых: ${result.newPosts}, отправлено: ${result.sent}`);
+      }
+      return;
+    }
+
+    // Check for dialog state
+    const dialog = await getDialogState(chatId);
     console.log('[Bot] Dialog state:', dialog?.state);
     if (dialog) {
-      await handleDialog(bot, msg.chat.id, dialog, msg.text || '');
+      await handleDialog(bot, chatId, dialog, text);
     } else {
       // No dialog - show menu
-      const user = await getUser(msg.chat.id);
-      if (user) await showMainMenu(bot, msg.chat.id, user);
+      const user = await getUser(chatId);
+      if (user) await showMainMenu(bot, chatId, user);
     }
   });
 
