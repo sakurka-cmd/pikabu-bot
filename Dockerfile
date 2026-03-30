@@ -3,8 +3,8 @@ FROM public.ecr.aws/docker/library/node:20-alpine
 
 WORKDIR /app
 
-# Install bun
-RUN npm install -g bun
+# Install bun and openssl (required for Prisma)
+RUN apk add --no-cache openssl && npm install -g bun
 
 # Copy package files
 COPY package.json ./

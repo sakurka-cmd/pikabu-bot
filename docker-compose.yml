@@ -5,6 +5,7 @@ services:
     restart: unless-stopped
     volumes:
       - ./data:/app/data
+    env_file:
+      - .env
     environment:
       - DATABASE_URL=file:/app/data/bot.db
-      - BOT_TOKEN=${BOT_TOKEN}
