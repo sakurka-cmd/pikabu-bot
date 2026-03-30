@@ -193,10 +193,16 @@ ${authors.slice(0, 5).map(a => `@${a.author} (${a.count})`).join('\n') || '—'}
 
   // Text messages
   bot.on('text', async (msg) => {
+    console.log('[Bot] Text received:', msg.text, 'from:', msg.chat.id);
     if (msg.text?.startsWith('/')) return;
     const dialog = await getDialogState(msg.chat.id);
+    console.log('[Bot] Dialog state:', dialog?.state);
     if (dialog) {
       await handleDialog(bot, msg.chat.id, dialog, msg.text || '');
+    } else {
+      // No dialog - show menu
+      const user = await getUser(msg.chat.id);
+      if (user) await showMainMenu(bot, msg.chat.id, user);
     }
   });
 
