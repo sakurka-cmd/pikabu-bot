@@ -9,6 +9,15 @@ import { getSettings, updateSettings } from './storage';
 
 const prisma = new PrismaClient();
 
+// Handle uncaught errors without crashing
+process.on('uncaughtException', (error) => {
+  console.error('[Uncaught]', error.message);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[Unhandled]', reason);
+});
+
 async function main() {
   console.log('🤖 Pikabu Pic Collector 2.0');
   console.log('===========================');

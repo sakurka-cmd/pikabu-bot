@@ -193,7 +193,6 @@ ${authors.slice(0, 5).map(a => `@${a.author} (${a.count})`).join('\n') || '—'}
 
   // Text messages
   bot.on('text', async (msg) => {
-    console.log('[Bot] Text received:', msg.text, 'from:', msg.chat.id);
     if (msg.text?.startsWith('/')) return;
 
     const chatId = msg.chat.id;
@@ -234,7 +233,6 @@ ${authors.slice(0, 5).map(a => `@${a.author} (${a.count})`).join('\n') || '—'}
 
     // Check for dialog state
     const dialog = await getDialogState(chatId);
-    console.log('[Bot] Dialog state:', dialog?.state);
     if (dialog) {
       await handleDialog(bot, chatId, dialog, text);
     } else {
@@ -246,20 +244,11 @@ ${authors.slice(0, 5).map(a => `@${a.author} (${a.count})`).join('\n') || '—'}
 
   // Callbacks
   bot.on('callback_query', async (query) => {
-    console.log('[Bot] Callback received:', query.data, 'from:', query.message?.chat.id);
-    if (!query.message?.chat.id || !query.data) {
-      console.log('[Bot] Callback ignored - missing data');
-      return;
-    }
+    if (!query.message?.chat.id || !query.data) return;
     try {
       await handleCallback(bot, query.message.chat.id, query.data, query.message.message_id);
     } catch (e: any) {
-      console.error('[Bot] Callback error:', e.message);
-      // Try to send new message if edit failed
-      try {
-        const user = await getUser(query.message.chat.id);
-        if (user) await showMainMenu(bot, query.message.chat.id, user);
-      } catch {}
+      // Ignore edit errors
     }
     await bot.answerCallbackQuery(query.id);
   });
@@ -444,7 +433,11 @@ async function showAdminPanel(bot: TelegramBot, chatId: number, msgId?: number) 
     [{ text: '◀️', callback_data: 'main_menu' }],
   ];
 
-  await bot.editMessageText(text, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', reply_markup: { inline_keyboard: btns } });
+  if (msgId) {
+    await bot.editMessageText(text, { chat_id: chatId, message_id: msgId, parse_mode: 'Markdown', reply_markup: { inline_keyboard: btns } });
+  } else {
+    await bot.sendMessage(chatId, text, { parse_mode: 'Markdown', reply_markup: { inline_keyboard: btns } });
+  }
 }
 
 async function showUsersList(bot: TelegramBot, chatId: number, page: number = 0, msgId?: number) {
